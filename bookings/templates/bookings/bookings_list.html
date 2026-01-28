@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список бронирований</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-lesson {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-exam {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-meeting {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Назад к бронированию</a>
+        <h1>📋 Список бронирований</h1>
+
+        <div id="bookingsList">Загрузка...</div>
+    </div>
+
+    <script>
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/bookings/list/');
+                const data = await response.json();
+                const container = document.getElementById('bookingsList');
+
+                if (data.count === 0) {
+                    container.innerHTML = '<div class="no-bookings">Бронирований пока нет</div>';
+                    return;
+                }
+
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Аудитория</th>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Тип</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.bookings.forEach(booking => {
+                    const badgeClass = `badge-${booking.type}`;
+                    html += `
+                        <tr>
+                            <td>${booking.id}</td>
+                            <td><strong>${booking.room}</strong></td>
+                            <td>${booking.date}</td>
+                            <td>${booking.time_start} - ${booking.time_end}</td>
+                            <td><span class="badge ${badgeClass}">${booking.type}</span></td>
+                            <td>${booking.email}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('bookingsList').innerHTML =
+                    '<div class="no-bookings">Ошибка загрузки данных</div>';
+            }
+        }
+
+        loadBookings();
+    </script>
+</body>
+</html>

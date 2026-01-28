@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система бронирования аудиторий</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status-box.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .status-box.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .status-box.loading {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .view-bookings {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .view-bookings:hover {
+            text-decoration: underline;
+        }
+
+        .service-status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .service-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .service-indicator.online {
+            background: #28a745;
+        }
+
+        .service-indicator.offline {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 Бронирование аудиторий</h1>
+        <p class="subtitle">Заполните форму для создания бронирования</p>
+
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="email">📧 Email</label>
+                <input type="email" id="email" name="email" required
+                       placeholder="student@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="room">🚪 Номер аудитории</label>
+                <input type="text" id="room" name="room" required
+                       placeholder="101">
+            </div>
+
+            <div class="form-group">
+                <label for="date">📅 Дата</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_start">🕐 Время начала</label>
+                <input type="time" id="time_start" name="time_start" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_end">🕐 Время окончания</label>
+                <input type="time" id="time_end" name="time_end" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">📝 Тип бронирования</label>
+                <select id="type" name="type" required>
+                    <option value="">Выберите тип</option>
+                    <option value="lesson">Урок</option>
+                    <option value="exam">Экзамен</option>
+                    <option value="meeting">Встреча</option>
+                </select>
+            </div>
+
+            <button type="submit">Забронировать</button>
+        </form>
+
+        <div id="statusBox" class="status-box"></div>
+
+<a href="/bookings/" class="view-bookings">📋 Посмотреть все бронирования</a>
+<a href="/admin-panel/" class="view-bookings">⚙️ Админ-панель</a>
+
+        <div class="service-status">
+            <div>
+                <span class="service-indicator online"></span>
+                <strong>Сервис A (Бронирование):</strong> Работает
+            </div>
+            <div style="margin-top: 5px;">
+                <span class="service-indicator" id="serviceBIndicator"></span>
+                <strong>Сервис B (Проверка):</strong> <span id="serviceBStatus">Проверка...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function checkServiceB() {
+            try {
+                const response = await fetch('/api/bookings/check-service-b/');
+                const data = await response.json();
+                const indicator = document.getElementById('serviceBIndicator');
+                const status = document.getElementById('serviceBStatus');
+
+                if (data.available) {
+                    indicator.classList.add('online');
+                    status.textContent = 'Работает';
+                } else {
+                    indicator.classList.add('offline');
+                    status.textContent = 'Недоступен';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('serviceBIndicator');
+                const status = document.getElementById('serviceBStatus');
+                indicator.classList.add('offline');
+                status.textContent = 'Недоступен';
+            }
+        }
+
+        checkServiceB();
+
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const statusBox = document.getElementById('statusBox');
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            statusBox.className = 'status-box loading';
+            statusBox.style.display = 'block';
+            statusBox.innerHTML = '<div class="status-title">⏳ Обработка...</div><div>Отправляем запрос в сервис проверки доступности...</div>';
+
+            try {
+                const response = await fetch('/api/bookings/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusBox.className = 'status-box success';
+                    statusBox.innerHTML = `
+                        <div class="status-title">✅ Успешно!</div>
+                        <div>${result.message}</div>
+                        <div style="margin-top: 10px; font-size: 12px;">
+                            <strong>Детали:</strong><br>
+                            Аудитория: ${result.booking.room}<br>
+                            Дата: ${result.booking.date}<br>
+                            Время: ${result.booking.time_start} - ${result.booking.time_end}
+                        </div>
+                    `;
+                    e.target.reset();
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerHTML = `
+                        <div class="status-title">❌ Ошибка</div>
+                        <div>${result.reason || result.error}</div>
+                    `;
+                }
+            } catch (error) {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <div class="status-title">❌ Ошибка сети</div>
+                    <div>Не удалось выполнить запрос. Проверьте соединение.</div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
